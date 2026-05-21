@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CubeFeet Results</title>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  padding: 30px;
+  background:
+    linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+    url("{{ url_for('static', filename='timber.jpg') }}");
+  background-size: cover;
+  color: #fff;
+  font-family: Inter, Arial;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px,1fr));
+  gap: 24px;
+}
+
+.card {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.35);
+}
+
+/* ===== TABLE NAME ===== */
+.table-title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.datetime {
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.85;
+  margin-bottom: 12px;
+}
+
+/* ===== TABLE ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background: rgba(255,255,255,0.2);
+}
+
+.footer {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 14px;
+}
+
+/* ===== ACTIONS ===== */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid #ffd369;
+  background: transparent;
+  color: #ffd369;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #ffd369;
+  color: #000;
+}
+</style>
+</head>
+
+<body>
+
+  {% if error %}
+  <div style="
+    background: rgba(255,0,0,0.15);
+    border: 1px solid #ff6b6b;
+    padding: 14px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 20px;
+  ">
+    {{ error }}
+  </div>
+{% endif %}
+
+<div class="grid">
+{% for t in results %}
+  <div class="card" id="table-{{ loop.index }}">
+    <!-- ✅ USER TABLE NAME ONLY -->
+    <div class="table-title">
+  {{ t.display_name or t.table_name or 'Untitled Table' }}
+</div>
+
+    <div class="datetime">{{ t.datetime }}</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Feet</th>
+          <th>Inches</th>
+          <th>CubeFeet</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in t.rows %}
+        <tr>
+          <td>{{ r.feet }}</td>
+          <td>{{ r.inch }}</td>
+          <td>{{ r.cube }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="footer">
+      <div><strong>Total CubeFeet:</strong> {{ t.total_cube }}</div>
+      <div><strong>Total Amount:</strong> ₹{{ t.total_amount }}</div>
+    </div>
+
+    <!-- 🚫 DO NOT CAPTURE THIS -->
+    <div class="actions no-capture">
+      <button onclick="sendTable('table-{{ loop.index }}')">Send</button>
+      <button onclick="downloadTable('table-{{ loop.index }}')">Download</button>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+<script>
+function captureTable(element, callback) {
+  // Hide buttons during capture
+  const hidden = element.querySelectorAll('.no-capture');
+  const originalDisplays = [];
+
+  hidden.forEach(el => {
+    originalDisplays.push(el.style.display);
+    el.style.display = 'none';
+  });
+
+  // Save original styles
+  const originalBg = element.style.background;
+  const originalFilter = element.style.backdropFilter;
+  const originalColor = element.style.color;
+
+  // Fix for html2canvas
+  element.style.background = '#ffffff';
+  element.style.backdropFilter = 'none';
+  element.style.color = '#000';
+
+  html2canvas(element, {
+    scale: 2,
+    backgroundColor: '#ffffff'
+  }).then(canvas => {
+    // Restore styles
+    element.style.background = originalBg;
+    element.style.backdropFilter = originalFilter;
+    element.style.color = originalColor;
+
+    // Restore buttons
+    hidden.forEach((el, i) => {
+      el.style.display = originalDisplays[i];
+    });
+
+    callback(canvas);
+  });
+}
+
+function downloadTable(id) {
+  const el = document.getElementById(id);
+  captureTable(el, canvas => {
+    const link = document.createElement('a');
+    link.download = `${id}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+function sendTable(id) {
+  const el = document.getElementById(id);
+
+  captureTable(el, canvas => {
+    canvas.toBlob(blob => {
+      const file = new File([blob], `${id}.png`, { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          files: [file],
+          title: 'CubeFeet Table'
+        });
+      } else {
+        downloadTable(id);
+        alert('Sharing not supported on this device. Image downloaded.');
+      }
+    });
+  });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CubeFeet Measurement</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+/* ================== BACKGROUND ================== */
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+    url("{{ url_for('static', filename='timber.jpg') }}");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding: 30px;
+  color: #f5f5f5;
+}
+
+/* ================== LAYOUT ================== */
+.container {
+  max-width: 1300px;
+  margin: auto;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 28px;
+}
+
+/* ================== CARD ================== */
+.table-wrapper {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+  position: relative;
+}
+
+/* ================== REMOVE TABLE ================== */
+.remove-table-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* ================== TABLE NAME ================== */
+.table-name {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 4px;
+  margin-bottom: 18px;
+}
+
+/* ================== TABLE ================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: rgba(255,255,255,0.15);
+  font-weight: 500;
+  padding: 10px;
+  font-size: 14px;
+}
+
+td {
+  padding: 8px;
+  text-align: center;
+}
+
+/* ================== INPUTS ================== */
+input[type="number"] {
+  width: 90px;
+  padding: 7px;
+  font-size: 14px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+}
+
+input::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ================== REMOVE ROW ================== */
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #ff6b6b;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* ================== ACTIONS ================== */
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.actions button {
+  background: transparent;
+  border: 1px solid #ffd369;
+  color: #ffd369;
+  padding: 8px 18px;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+/* ================== PRICE SECTION ================== */
+.price-section {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.price-box label {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.price-box input {
+  width: 60%;
+}
+
+/* ================== ADD TABLE ================== */
+.add-table-wrapper {
+  text-align: center;
+  margin-top: 35px;
+}
+
+.add-table-btn {
+  background: #ffd369;
+  color: #000;
+  font-weight: 600;
+  padding: 14px 36px;
+  font-size: 15px;
+  border-radius: 40px;
+  border: none;
+}
+
+/* ================== CALCULATE ================== */
+.calculate-wrapper {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.calculate-btn {
+  background: #ffffff;
+  color: #000;
+  padding: 14px 42px;
+  font-size: 16px;
+  border-radius: 40px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="content" id="contentArea"></div>
+
+  <div class="add-table-wrapper">
+    <button id="addTableBtn" class="add-table-btn" onclick="createTable()">Add Table</button>
+  </div>
+
+  <div class="calculate-wrapper">
+    <button class="calculate-btn" onclick="submitData()">Calculate Total</button>
+  </div>
+
+</div>
+
+<script>
+let tableCount = 0;
+const maxTables = 3;
+
+function updateAddTableVisibility() {
+  document.getElementById('addTableBtn').style.display =
+    tableCount >= maxTables ? 'none' : 'inline-block';
+}
+
+function createTable() {
+  if (tableCount >= maxTables) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'table-wrapper';
+
+  const removeTableBtn = document.createElement('button');
+  removeTableBtn.className = 'remove-table-btn';
+  removeTableBtn.textContent = 'Remove Table';
+  removeTableBtn.onclick = () => {
+    if (confirm('Remove this table?')) {
+      wrapper.remove();
+      tableCount--;
+      updateAddTableVisibility();
+    }
+  };
+
+  const tableName = document.createElement('input');
+  tableName.className = 'table-name';
+  tableName.placeholder = 'Enter table name';
+
+  const table = document.createElement('table');
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Feet</th>
+        <th>Inches</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  `;
+
+  const tbody = table.querySelector('tbody');
+  tbody.appendChild(createRow());
+
+  const actions = document.createElement('div');
+  actions.className = 'actions';
+
+  const addRowBtn = document.createElement('button');
+  addRowBtn.textContent = 'Add Row';
+  addRowBtn.onclick = () => tbody.appendChild(createRow());
+
+  actions.appendChild(addRowBtn);
+
+  const priceSection = document.createElement('div');
+  priceSection.className = 'price-section';
+  priceSection.innerHTML = `
+    <div class="price-box">
+      <label>Price 1</label>
+      <input type="number" min="0" step="0.01">
+    </div>
+    <div class="price-box">
+      <label>Price 2</label>
+      <input type="number" min="0" step="0.01">
+    </div>
+  `;
+
+  wrapper.append(removeTableBtn, tableName, table, actions, priceSection);
+  document.getElementById('contentArea').appendChild(wrapper);
+
+  tableCount++;
+  updateAddTableVisibility();
+}
+
+function createRow() {
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td><input type="number" min="0"></td>
+    <td><input type="number" min="0" max="11"></td>
+    <td><button class="remove-btn" onclick="this.closest('tr').remove()">✕</button></td>
+  `;
+  return row;
+}
+
+function submitData() {
+  const tables = [];
+
+  document.querySelectorAll('.table-wrapper').forEach(wrapper => {
+    const name = wrapper.querySelector('.table-name').value || 'Untitled Table';
+
+    // ---------- rows ----------
+    const rows = [];
+    wrapper.querySelectorAll('tbody tr').forEach(tr => {
+      const feet = tr.children[0].querySelector('input').value;
+      const inch = tr.children[1].querySelector('input').value;
+
+      if (feet && inch) {
+        rows.push({ feet, inch });
+      }
+    });
+
+    if (!rows.length) return;
+
+    // ---------- prices (MATCH BACKEND) ----------
+    const priceInputs = wrapper.querySelectorAll('.price-box input');
+
+    tables.push({
+      name,
+      rows,
+      prices: [{
+        amount1: priceInputs[0].value || 0,
+        amount2: priceInputs[1].value || 0
+      }]
+    });
+  });
+
+  if (!tables.length) {
+    alert("Please enter at least one valid measurement.");
+    return;
+  }
+
+  fetch('/coreresult', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tables })
+  })
+  .then(res => res.text())
+  .then(html => {
+    document.open();
+    document.write(html);
+    document.close();
+  });
+}
+
+createTable();
+updateAddTableVisibility();
+</script>
+
+</body>
+</html>

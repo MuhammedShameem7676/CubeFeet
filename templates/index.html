@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Select Material</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+        url("{{ url_for('static', filename='timber.jpg') }}");
+      background-size: cover;
+      background-position: center;
+      color: #fff;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 30px;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      padding: 40px 30px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+    }
+
+    .card h2 {
+      margin: 0 0 15px;
+      font-size: 28px;
+      letter-spacing: 1px;
+      color: #f5deb3; /* light wood color */
+    }
+
+    .card p {
+      font-size: 15px;
+      opacity: 0.9;
+      margin-bottom: 30px;
+    }
+
+    .card a {
+      display: inline-block;
+      padding: 12px 28px;
+      border-radius: 30px;
+      background: #d2b48c;
+      color: #3b2f1e;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .card a:hover {
+      background: #e6cfa3;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 30px 20px;
+      }
+
+      .card h2 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="card">
+      <h2>Timber</h2>
+      <p>Premium quality timber for durable and elegant interiors.</p>
+      <a href="{{ url_for('timber') }}">Explore Timber</a>
+    </div>
+
+    <div class="card">
+      <h2>Core</h2>
+      <p>Strong and reliable core materials for lasting performance.</p>
+      <a href="{{ url_for('core') }}">Explore Core</a>
+    </div>
+
+  </div>
+</body>
+</html>
