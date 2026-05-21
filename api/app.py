@@ -2,7 +2,11 @@
 from flask import Flask, request, render_template, redirect, url_for, jsonify
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder="../templates",
+    static_folder="../static"
+)
 
 # ----------------------------------------
 # determine_output (same mappings)
@@ -287,7 +291,3 @@ def core_result():
         results=results
     )
  
-
-# ================= RUN =================
-if __name__ == "__main__":
-    app.run(debug=True)
